@@ -112,7 +112,8 @@ int isobject_valid(char *object){
 int isarticle_valid(char *article){
   if (!article) return 0;
   do{
-    if (!isprint(*article++)) return 0;
+    if (!isprint(*article) && !isspace(*article)) return 0;
+    article++;
   } while(*article != NULL);
   return 1;
 }
@@ -647,6 +648,7 @@ void get_articles(http_request *req, hw_http_response *res, void *udata){
   void *vec_v; 
   char *feed, *article;
   size_t feed_length;
+  vc_vector *vc_json_deparsed;
   for (
       vec_v=vc_vector_begin(vec_f);
       vec_v!=vc_vector_end(vec_f);
@@ -662,10 +664,18 @@ void get_articles(http_request *req, hw_http_response *res, void *udata){
       vc_string_append(vec_ua_res,"{\"feed\":\"");
       vc_string_append(vec_ua_res,feed);
       vc_string_append(vec_ua_res,"\",\"content\":\"");
-      article = (char *)it->key().ToString().c_str();
-      article += feed_length + 1;
-      vc_string_append(vec_ua_res,article);
+      // TODO: determine why we can't do pointer arithmetic
+      //       on pointer returned from
+      //       it->key().ToString().c_str()
+      //
+      //       garbage collection?
+      //
+      article = strdup((char *)it->key().ToString().c_str());
+      vc_json_deparsed = vc_string_json_deparse_char(article + feed_length + 1);
+      vc_string_append(vec_ua_res,vc_string_begin(vc_json_deparsed));
+      vc_string_release(vc_json_deparsed);
       vc_string_append(vec_ua_res,"\"},\n");
+      free(article);
     }
   }
   delete it;

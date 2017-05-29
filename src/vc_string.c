@@ -44,3 +44,30 @@ size_t vc_string_length(vc_vector *v){
 void vc_string_release(vc_vector *v){
   vc_vector_release(v);
 }
+
+vc_vector *vc_string_json_deparse_char(char *s){
+
+  if (s==NULL || *s == '\0') return NULL;
+
+  vc_vector *v_d = vc_vector_create(VC_STRING_MIN_SIZE,1,NULL);
+
+  while(*s != '\0')
+  {
+    switch(*s)
+    {
+      case '\b':  vc_vector_append(v_d,"\\b", 2);  break;
+      case '\f':  vc_vector_append(v_d,"\\f", 2);  break;
+      case '\n':  vc_vector_append(v_d,"\\n", 2);  break;
+      case '\r':  vc_vector_append(v_d,"\\r", 2);  break;
+      case '\t':  vc_vector_append(v_d,"\\t", 2);  break;
+      case '"':   vc_vector_append(v_d,"\\\"",2);  break;
+      case '\\':  vc_vector_append(v_d,"\\\\",2);  break;
+      case '/':   vc_vector_append(v_d,"\\/", 2);  break;
+      default:    vc_vector_append(v_d,    s, 1);  break;
+    }
+    s++;
+  }
+
+  vc_string_add_null_terminator(v_d);
+  return v_d;
+}
