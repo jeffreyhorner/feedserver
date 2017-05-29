@@ -7,10 +7,9 @@ cd dependencies
 
 # Get and Build haywire
 if [ ! -d "haywire" ]; then
-  echo "git clone https://github.com/haywire/haywire"
-  git clone https://github.com/haywire/haywire
+  echo "git clone https://github.com/jeffreyhorner/haywire"
+  git clone https://github.com/jeffreyhorner/haywire
   cd haywire
-  git checkout 7218d59a25245b576e155ad03d7b5e5aa446ef7e
   cp ../../compile_haywire_dependencies.sh compile_dependencies.sh
   ./compile_dependencies.sh
   ./compile_make.sh
