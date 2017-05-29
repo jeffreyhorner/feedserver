@@ -1,0 +1,372 @@
+---
+title: "Feed Server"
+author: "Jeffrey Horner"
+date: "May 28, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+[![Build Status](https://travis-ci.org/jeffreyhorner/feedserver.svg?branch=master)](https://travis-ci.org/jeffreyhorner/feedserver)
+
+I was asked to create a software project that satistifies the below requirements:
+
+```
+## Problem
+
+We want to make a feed reader system. We will have 3 entities
+in the system: Users, Feeds, Articles. It should support the following
+operations:
+
+1. Subscribe/Unsubscribe a User to a Feed
+2. Add Articles to a Feed
+3. Get all Feeds a Subscriber is following
+4. Get Articles from the set of Feeds a Subscriber is following
+
+## Requirements
+
+1. Write a service with HTTP endpoints that allow items 1-4 from above
+2. It should handle multiple concurrent clients
+3. It should persist data across restarts
+4. Supply a README explaining your choices and how to run/test your service
+```
+
+With such a loose set of requirments, there are any number of ways to interpret the problem and many different areas 
+to cover, from composing the appropriate data model, to choice of data store, server architecture, HTTP payloads 
+for requests and responses, to choice of programming language.
+
+I erred on the side ambition and chose speed and scalability over a robust data model and a featureful api.
+With so little time to complete the project, I may have overreached.
+
+## Overview
+
+I chose to write in **C** with a bit of **C++** for connecting to the key value **RocksDB** database. 
+I decided on an HTTP  server named [haywire](https://github.com/haywire/haywire) that utilizes **libuv** for scalability and cuncurrency. 
+I somewhat modeled the build system based on a haywire depenent project named 
+[pyrs](https://github.com/skogorev/pyrs). And I decided on **JSON** for the realy simple HTTP payloads.
+
+**pyrs** brought along two other projects on which I piggybacked, namely a [json-parser](https://github.com/udp/json-parser) in **C**,
+and the grow buffer [vc_vector](https://github.com/skogorev/vc_vector) also in **C**.
+
+## Feed Server API
+
+I attacked the problem by first composing the JSON data models with HTTP request/responses. 
+The model changed a bit while I was developing the server, and I generated more ideas for enhancements 
+than I had time to implement, so this is the result:
+
+*Based loosely on the [Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html).*
+
+### 1.a Subscribe a User to a Feed
+
+A singleton user, but the feed object can be an array. Only later in development did I realize this could be extended
+further for bulk loading lots of users at once. 
+
+**Request**
+
+```
+PUT /subscribeuser
+```
+*Payload*
+
+```
+{
+  "user": "foo",
+  "feed": "bar"
+}
+```
+
+**Response**
+
+Hypermedia, e.g. **uri**, links have been added as an example of how to extend the API, but the operation on those links
+aren't completely specified. For instance later on you'll see we can do a **GET** on */usr/foo* to get the feeds they're
+subscribed to, and you can **POST** articles to */feed/bar*, but no orthogonal operations are defined. What would a **PUT**
+to */usr/foo* do, or could **GET** */feed/bar* just get articles for just one feed?
+
+```
+{
+  "user": { 
+    "name": "foo" , 
+    "uri": "/user/foo" , 
+  },
+  "feeds": [
+    { "name": "bar" , "uri": "/feed/bar" }
+  ]
+}
+```
+
+### 1.b Unsubscribe a User to a Feed
+
+**Request**
+
+```
+PUT /unsubscribeuser
+```
+
+*Payload*
+
+```
+{
+  "user": "foo",*
+  "feed": "bar"
+}
+```
+
+**Response**
+
+```
+{
+  "user": { 
+    "name": "foo" , 
+    "uri": "/user/foo"
+  },
+  "feeds": [ ]
+}
+```
+
+### 2. Add Articles to a Feed
+
+**Request**
+
+Very simple articles for simple testing. Could have allowed arbitrary **JSON* objects for the content.
+Articles are **accepted** if they are printable (isprint()), or are **rejected** otherwise. 
+
+```
+POST /feed/bar
+```
+
+*Payload*
+
+```
+{
+    "articles": [
+      { "content": "lorem ipsum" },
+      { "content":  "dolor sit amet"  }
+    ]
+}
+```
+
+**Response**
+
+```
+{
+    "articles": [
+      { "disposition": "accepted" }
+      { "disposition": "rejected" }
+    ]
+}
+```
+
+### 3. Get all Feeds a Subscriber is following
+
+**Request**
+
+```
+GET /user/foo
+```
+
+**Response**
+
+```
+  "user": { 
+    "name": "foo" , 
+    "uri": "/user/foo" , 
+  },
+  "feeds": [
+    { "name": "bar" , "uri": "/feed/bar" }
+  ]
+}
+```
+
+### 4. Get Articles from the set of Feeds a Subscriber is following
+
+**Request**
+
+```
+GET /userarticles/foo
+```
+
+**Response**
+
+This kind of response folds nicely to a data frame.
+
+```
+{
+  [
+    {   
+      "feed": "bar", 
+      "article": "lorem ipsum"
+    },
+    { "feed": "bar",
+      "article": "dolor sit amet"
+    }
+  ]
+}
+```
+
+## Database Design
+
+Two **RocksDB** databases were used:
+
+* **/tmp/rocksdb_uf**  User-Feed relation. 
+
+Keys are names of User strings (only alphanumeric), and values are **JSON** 
+  strings representing the user including the list of Feeds to which the user subscribed.
+  
+* **/tmp/rocksdb_fa** Feed-Article relation:
+
+Keys are the concatenation of the string Feed plus a forward slash plus the Article proper. No values.
+Placing the Feed and the Article in the key section guarantees that we will only add the article once to the Feed, however there is a **RocksDB** hard limit of **3Mb** on Article size.
+
+A logical conclusion can be drawn that a relational database would be safer for data integrity given the three way 
+relation between Users, Feeds, and Articles. However, I used this project to explore using a key value store, and after the
+light reading I've done on the subject, it seems that many of the key values databases are doing their best to provide better
+integrity with things like transactions, read-modify-write operators, etc.
+
+## Server Design
+
+The server code is in [feedserver.cpp](src/feedserver.cpp), and provides simple route based handlers on top of **haywire**, which
+does all the heavy evented connection and thread lifting.
+  
+## Building
+
+**feedserver** was developed, tested, and built on Ubuntu 16.04 with most of the **gcc** development packages. Here's
+an not exhaustive list of requirements and ubuntu packages to install with apt-get:
+
+### Dependencies 
+
+* A suitable **C++11**
+
+* Cmake
+
+* For **RocksDB** - from [link](https://github.com/facebook/rocksdb/blob/master/INSTALL.md)
+```
+libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev libzstd-dev
+```
+
+* For **haywire** packagesfollowing packages:
+```
+cmake automake autoconf libssl-dev libtool
+```
+
+* For testing
+```
+r-base r-base-dev
+```
+
+### Compile
+
+```
+$ ./build_all.sh
+```
+
+## Running
+
+**feedserver** does not background so be aware.
+
+Help output:
+
+```
+$ ./build/feedserver --help
+--help
+	Shows this usage information.
+--port 8000
+	Port to listen on.
+--threads 0
+	Number of threads to use.
+--balancer ipc
+	Method to load balance threads.
+--parser http_parser
+	HTTP parser to use
+--max_request_size 1048576
+	Maximum request size. Defaults to 1MB.
+--tcp_nodelay
+	If present, enables tcp_nodelay (i.e. disables Nagle's algorithm).
+--listen_backlog 0
+	Maximum size of the backlog when accepting connection. Defaults to SOMAXCONN.
+```
+
+Run:
+
+```
+$ ./build/feedserver 
+Added route /subscribeuser
+Added route /unsubscribeuser
+Added route /feed/*
+Added route /user/*
+Added route /userarticles/*
+Added route /shutdown
+Address: 0.0.0.0
+Port: 8000
+Threads: 0
+Balancer: ipc
+Parser: http_parser
+TCP No Delay: off
+Listen backlog: 128
+Maximum request size: 1048576
+Listening...
+```
+
+### Shutting Down
+
+Send a **GET** request to the server with the following *URI*:
+
+```
+GET /shutdown
+```
+
+**haywire** exposed none of the event loops or thread contexts to the web application developer, so this was a novel
+way of shutting down. Simply put, a global variables is pegged high and each new request is denied. The intent is to
+have the thread that initiated shutdown probe the databases by calling the **RocksDB** API endpoint [GetThreadList](http://rocksdb.org/blog/2015/10/27/getthreadlist.html)
+
+## Testing
+
+**valgrind** and **gdb** were used extensively to ensure memory was appropriately handled.
+
+The first tests ensure that **JSON** payloads and database keys and values can be transformed back and forth. To that end,
+two **C** library tests were added to the **cmake** build system 
+( [test-userfeeds.c](testing/test-userfeed.c) and [test-feedarticles.c](testing/test-feedarticle.c) ) and run like so:
+
+```
+$ (cd build && make test)
+Running tests...
+Test project /home/jeffrey/Projects/confluent/feedserver/build
+    Start 1: test-userfeed
+1/2 Test #1: test-userfeed ....................   Passed    0.00 sec
+    Start 2: test-feedarticle
+2/2 Test #2: test-feedarticle .................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.00 sec
+```
+
+The second test [test-feedserver.R](testing/test-feedserver.R) starts the server, performs various operations, shuts down 
+the server and then compares output to a [saved output](testing/test-feedserver.RoutSave). Call the test with the shell
+script [test_feedserver.sh](test_feedserver.sh):
+
+```
+$ ./test_feedserver.sh 
+No encoding supplied: defaulting to UTF-8.
+43c43
+<   Date: 2017-05-29 01:25
+---
+>   Date: 2017-05-28 23:34
+83c83
+<   Date: 2017-05-29 01:25
+---
+>   Date: 2017-05-28 23:34
+131c131
+<   Date: 2017-05-29 01:25
+---
+>   Date: 2017-05-28 23:34
+171c171
+<   Date: 2017-05-29 01:25
+---
+>   Date: 2017-05-28 23:34
+200c200
+
+etc.
+```
+
+I wished to continue testing further for load and concurrency, but time is not on my side. Time to turn it the assignment.
