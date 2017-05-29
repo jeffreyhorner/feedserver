@@ -51,7 +51,5 @@ fi
 cd ..
 
 # R libraries
-R_LIBS_USER=/tmp Rscript -e "options(repos = list(CRAN = 'http://cran.rstudio.com/')); install.packages('devtools')"
-R_LIBS_USER=/tmp Rscript -e "options(repos = list(CRAN = 'http://cran.rstudio.com/')); library(devtools); install_github('hadley/httr')"
-R_LIBS_USER=/tmp Rscript -e "options(repos = list(CRAN = 'http://cran.rstudio.com/')); library(devtools); install_github('jeroen/jsonlite')"
+R_LIBS_USER=/tmp Rscript -e "options(repos = list(CRAN = 'http://cran.rstudio.com/')); install.packages(c('httr','xml2','jsonlite'))"
 echo "Built"
