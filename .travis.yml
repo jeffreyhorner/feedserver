@@ -11,4 +11,4 @@ cache:
 addons:
    apt:
       sources: ['ubuntu-toolchain-r-test']
-      packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'libgflags-dev']
+      packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'libgflags-dev','r-base','r-cran-jsonlite','r-base-dev']

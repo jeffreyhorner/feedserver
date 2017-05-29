@@ -50,4 +50,8 @@ if [ ! -d "rocksdb" ]; then
 fi
 
 cd ..
+
+# R libraries
+Rscript -e "install.packages('devtools')"
+Rscript -e "library(devtools); install_github('hadley/httr')"
 echo "Built"
