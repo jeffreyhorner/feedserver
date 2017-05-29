@@ -53,7 +53,7 @@ target_link_libraries(feedserver
         m
         ${DEPENDENCIES_DIR}/rocksdb/librocksdb.a
         ${CMAKE_THREAD_LIBS_INIT}
-        rt z bz2 numa)
+        rt z bz2)
 
 enable_testing()
 
