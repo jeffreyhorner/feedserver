@@ -6,7 +6,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" CACHE STRING "compile flags" FORCE)
 
-execute_process(COMMAND "dpkg -L libsnappy-dev | grep libsnappy.a" OUTPUT_VARIABLE LIBSNAPPY_A)
+execute_process(COMMAND "../libsnappy_a.sh" OUTPUT_VARIABLE LIBSNAPPY_A)
 
 add_definitions(
         -std=gnu99
