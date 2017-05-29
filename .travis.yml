@@ -10,10 +10,12 @@ cache:
 
 addons:
    apt:
-      sources: ['ubuntu-toolchain-r-test']
+      sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
       packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'r-base','r-base-dev']
-before_script:
+before_install:
   - CXX=g++-6
 install: ./build_dependencies.sh
+before_script:
+  - CXX=g++-6
 script: ./build_feedserver.sh
-after_success: ./test_veedserver.sh
+after_success: ./test_feedserver.sh

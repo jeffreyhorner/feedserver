@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Compilers for feedserver dependencies"
+echo "CC: `$CC --version`"
+echo "CXX: `$CC --version`"
+
 if [ ! -d dependencies ]; then
   mkdir dependencies
 fi
