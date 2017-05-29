@@ -1,0 +1,6 @@
+{
+    "articles": [
+      { "content": "lorem ipsum" },
+      { "content":  "dolor sit amet"  }
+    ]
+}

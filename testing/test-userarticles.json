@@ -1,0 +1,11 @@
+{
+  "articles": [
+    {   
+      "feed": "bar", 
+      "content": "lorem ipsum"
+    },
+    { "feed": "bar",
+      "content": "dolor sit amet"
+    }
+  ]
+}

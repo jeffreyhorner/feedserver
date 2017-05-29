@@ -1,0 +1,14 @@
+sudo: false
+language: cpp
+os:
+  - linux
+compiler:
+  - gcc
+cache:
+  - ccache
+  - apt
+
+addons:
+   apt:
+      sources: ['ubuntu-toolchain-r-test']
+      packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'libgflags-dev']
