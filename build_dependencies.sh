@@ -45,7 +45,6 @@ if [ ! -d "rocksdb" ]; then
   rm rocksdb-5.4.5.zip
   cd rocksdb
   make static_lib
-  dpkg -L libsnappy-dev | grep libsnappy.a
   cd ..
 fi
 

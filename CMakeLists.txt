@@ -6,6 +6,8 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" CACHE STRING "compile flags" FORCE)
 
+execute_process(COMMAND "dpkg -L libsnappy-dev | grep libsnappy.a" OUTPUT_VARIABLE LIBSNAPPY_A)
+
 add_definitions(
         -std=gnu99
         -ggdb3
@@ -52,6 +54,7 @@ target_link_libraries(feedserver
         ${DEPENDENCIES_DIR}/haywire/lib/libuv/.libs/libuv.a
         m
         ${DEPENDENCIES_DIR}/rocksdb/librocksdb.a
+        ${LIBSNAPPY_A}
         ${CMAKE_THREAD_LIBS_INIT}
         rt z bz2)
 
