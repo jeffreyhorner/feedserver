@@ -2,7 +2,7 @@
 
 echo "Compilers for feedserver dependencies"
 echo "CC: `$CC --version`"
-echo "CXX: `$CC --version`"
+echo "CXX: `$CXX --version`"
 
 if [ ! -d dependencies ]; then
   mkdir dependencies

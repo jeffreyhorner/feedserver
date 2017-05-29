@@ -17,5 +17,5 @@ before_install:
 install: ./build_dependencies.sh
 before_script:
   - CXX=g++-6
-script: ./build_feedserver.sh
+script: CXX=g++-6 ./build_feedserver.sh
 after_success: ./test_feedserver.sh
