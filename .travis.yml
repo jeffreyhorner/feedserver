@@ -13,9 +13,9 @@ addons:
       sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-4.0']
       packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'r-base','r-base-dev']
 before_install:
-  - CXX=g++-6
+  - export CXX=g++-6
 install: ./build_dependencies.sh
 before_script:
-  - CXX=g++-6
-script: CXX=g++-6 ./build_feedserver.sh
+  - export CXX=g++-6
+script: ./build_feedserver.sh
 after_success: ./test_feedserver.sh

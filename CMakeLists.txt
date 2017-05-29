@@ -4,9 +4,10 @@ project(feedserver)
 # set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_BUILD_TYPE Debug)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" CACHE STRING "compile flags" FORCE)
+
 add_definitions(
         -std=gnu99
-        -std=c++11
         -ggdb3
         -pedantic
         -Wall
@@ -44,6 +45,7 @@ include_directories(
 find_package(Threads REQUIRED)
 
 add_executable(feedserver ${FDSRV_SOURCES})
+
 
 target_link_libraries(feedserver
         ${DEPENDENCIES_DIR}/haywire/build/libhaywire.a
