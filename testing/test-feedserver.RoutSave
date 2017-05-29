@@ -40,7 +40,7 @@ Type 'q()' to quit R.
 > ret <- PUT(uri('subscribeuser'),body=toJSON(req))
 > print(ret)
 Response [http://0.0.0.0:8000/subscribeuser]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 111 B
@@ -80,7 +80,7 @@ $feeds[[1]]$uri
 > ret <- PUT(uri('subscribeuser'),body=toJSON(req))
 > print(ret)
 Response [http://0.0.0.0:8000/subscribeuser]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 155 B
@@ -128,7 +128,7 @@ $feeds[[2]]$uri
 > ret <- PUT(uri('unsubscribeuser'),body=toJSON(req))
 > print(ret)
 Response [http://0.0.0.0:8000/unsubscribeuser]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 111 B
@@ -168,7 +168,7 @@ $feeds[[1]]$uri
 > ret <- PUT(uri('unsubscribeuser'),body=toJSON(req))
 > print(ret)
 Response [http://0.0.0.0:8000/unsubscribeuser]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 69 B
@@ -197,7 +197,7 @@ list()
 > ret <- GET(uri('user/user1'))
 > print(ret)
 Response [http://0.0.0.0:8000/user/user1]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 68 B
@@ -227,27 +227,27 @@ list()
 > ret <- POST(uri('feed/feed1'),body=toJSON(fareq))
 > print(ret)
 Response [http://0.0.0.0:8000/feed/feed1]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
-  Size: 77 B
+  Size: 79 B
 {
 "articles": [
-{"disposition": "written"}
+{"disposition": "accepted"}
 ,
-{"disposition": "written"}
+{"disposition": "accepted"}
 ]
 }
 > content(ret)
 $articles
 $articles[[1]]
 $articles[[1]]$disposition
-[1] "written"
+[1] "accepted"
 
 
 $articles[[2]]
 $articles[[2]]$disposition
-[1] "written"
+[1] "accepted"
 
 
 
@@ -257,27 +257,27 @@ $articles[[2]]$disposition
 > ret <- POST(uri('feed/feed2'),body=toJSON(fareq))
 > print(ret)
 Response [http://0.0.0.0:8000/feed/feed2]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
-  Size: 77 B
+  Size: 79 B
 {
 "articles": [
-{"disposition": "written"}
+{"disposition": "accepted"}
 ,
-{"disposition": "written"}
+{"disposition": "accepted"}
 ]
 }
 > content(ret)
 $articles
 $articles[[1]]
 $articles[[1]]$disposition
-[1] "written"
+[1] "accepted"
 
 
 $articles[[2]]
 $articles[[2]]$disposition
-[1] "written"
+[1] "accepted"
 
 
 
@@ -287,7 +287,7 @@ $articles[[2]]$disposition
 > ret <- PUT(uri('subscribeuser'),body=toJSON(req))
 > print(ret)
 Response [http://0.0.0.0:8000/subscribeuser]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 111 B
@@ -326,7 +326,7 @@ $feeds[[1]]$uri
 > ret <- GET(uri('userarticles/user1'))
 > print(ret)
 Response [http://0.0.0.0:8000/userarticles/user1]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 200
   Content-Type: application/json
   Size: 94 B
@@ -357,7 +357,7 @@ $articles[[2]]$content
 > ret <- shutdown_server()
 > print(ret)
 Response [http://0.0.0.0:8000/shutdown]
-  Date: 2017-05-28 18:51
+  Date: 2017-05-28 23:34
   Status: 503
   Content-Type: text/html
   Size: 14 B
