@@ -12,6 +12,8 @@ addons:
    apt:
       sources: ['ubuntu-toolchain-r-test']
       packages: ['g++-6', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'r-base','r-base-dev']
+before_script:
+  - CXX=g++-6
 install: ./build_dependencies.sh
 script: ./build_feedserver.sh
 after_success: ./test_veedserver.sh
