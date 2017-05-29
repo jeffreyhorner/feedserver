@@ -112,7 +112,7 @@ int isobject_valid(char *object){
 int isarticle_valid(char *article){
   if (!article) return 0;
   do{
-    if (!isalnum(*article++)) return 0;
+    if (!isprint(*article++)) return 0;
   } while(*article != NULL);
   return 1;
 }
@@ -474,11 +474,15 @@ void submit_articles(http_request *req, hw_http_response *res, void *udata){
       vec_va!=vc_vector_end(vec_a);
       vec_va=vc_vector_next(vec_a,vec_va), i++
   ){
-    s = rocksdb_fa->Put(WriteOptions(),STRING_PTR(vec_va),"");
-    if (s.ok())
-      fa_submission_article_disp(fa_req,i,"written");
-    else
-      fa_submission_article_disp(fa_req,i,s.ToString().c_str());
+    if (isarticle_valid(STRING_PTR(vec_va))){
+      s = rocksdb_fa->Put(WriteOptions(),STRING_PTR(vec_va),"");
+      if (s.ok())
+        fa_submission_article_disp(fa_req,i,"accepted");
+      else
+        fa_submission_article_disp(fa_req,i,s.ToString().c_str());
+    } else {
+        fa_submission_article_disp(fa_req,i,"rejected");
+    }
   }
 
   vc_vector *vec_fa_res = fa_submission_response(fa_req);
