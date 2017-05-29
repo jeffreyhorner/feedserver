@@ -51,7 +51,7 @@ fi
 cd ..
 
 # R libraries
-Rscript -e "install.packages('devtools')"
-Rscript -e "library(devtools); install_github('hadley/httr')"
-Rscript -e "library(devtools); install_github('jeroen/jsonlite')"
+R_LIBS_USR=/tmp Rscript -e "install.packages('devtools')"
+R_LIBS_USR=/tmp Rscript -e "library(devtools); install_github('hadley/httr')"
+R_LIBS_USR=/tmp Rscript -e "library(devtools); install_github('jeroen/jsonlite')"
 echo "Built"
